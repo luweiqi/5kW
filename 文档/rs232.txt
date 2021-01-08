@@ -1,0 +1,176 @@
+以下为RS232通讯程序
+
+
+功能：先运行主机程序，再运行DSP程序，按下COMMAND1，则TEXT1中为“Ready”，再按下COMMAND2，则TEXT1中为“READY READY TT”。
+
+一、主机部分程序
+
+Private Sub Command1_Click()
+Dim Instring As String
+    ' 使用 COM2。
+    MSComm1.CommPort = 2
+    ' 9600 波特，无奇偶校验，8 位数据，一个停止位。
+    MSComm1.Settings = "9600,o,8,1"
+    ' 当输入占用时，
+    ' 告诉控件读入整个缓冲区。
+    MSComm1.InputLen = 0
+    ' 打开端口。
+    MSComm1.PortOpen = True
+    ' 等待数据返回到串行端口。
+    Command1.Enabled = False
+    Do
+        DoEvents
+    Loop Until MSComm1.InBufferCount > 2
+
+    Text1.Text = MSComm1.Input
+    Command2.Enabled = True
+    Text2.Text = MSComm1.CommEvent
+    
+End Sub
+
+Private Sub Command2_Click()
+
+    MSComm1.Output = Chr$(89)
+
+    
+    Do
+        DoEvents
+    Loop Until MSComm1.InBufferCount > 2
+
+ 
+
+    ' 从串行端口读 "OK" 响应。
+
+    Text1.Text = MSComm1.Input
+    ' 关闭串行端口。
+   Text2.Text = MSComm1.CommEvent
+    MSComm1.PortOpen = False
+End Sub
+
+Private Sub Form_Load()
+Command2.Enabled = False
+End Sub
+
+二、DSP部分程序
+        .INCLUDE        "INIT.H"
+KICK_DOG.MACRO
+        LDP     #00E0H
+        SPLK    #055H,WDKEY
+        SPLK    #0AAH,WDKEY
+        LDP     #0H
+        .ENDM
+        
+
+	.TEXT
+START:	SETC	INTM	;DISABLE INTERRUPTS
+	CLRC	SXM	;CLEAR SIGN EXTENSION MODE
+	CLRC	OVM	;RESET OVERFLOW MODE
+	CLRC	CNF	;CONFIG BLOCK B0 TO DATA MEM.
+        LDP     #00E0H
+        SPLK    #006FH,WDCR
+        KICK_DOG
+	LDP	#00E0H
+        SPLK    #0000000001101000B,CKCR1
+        SPLK    #0000000011000010B,CKCR0    ;CLKMD=PLL ,SYSCLK=CPUCLK/2
+        SPLK    #40C0H,SYSCR                ;CLKOUT=CPUCLK
+
+;INIT OF INTERRUPT DRIVEN SCI ROUTINE
+SCI_INIT:	LDP	#00E0H
+                SPLK    #0037H,SCICCR
+                SPLK     #0013H,SCICTL1
+                
+                SPLK    #0000H,SCICTL2
+		SPLK    #0000H,SCIHBAUD
+                SPLK    #0040H,SCILBAUD ;RATE=9600B/S(20M)
+		SPLK    #0022H,SCIPC2
+                SPLK    #0033H,SCICTL1
+
+
+;MAIN PROGRAM ROUTAIN
+
+
+        NOP
+        CALL    WAIT1
+        NOP
+        NOP
+	NOP
+        SPLK    #0052H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+        NOP
+        NOP
+        SPLK    #0065H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+	NOP
+	NOP
+        NOP
+        SPLK    #0061H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+	NOP
+	NOP
+        SPLK    #0064H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+	NOP
+	NOP
+        SPLK    #0079H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+	NOP
+	NOP
+        SPLK    #001AH,SCITXBUF
+        NOP
+        NOP
+        NOP
+        CALL    WAIT1
+        NOP
+	NOP
+        NOP
+
+
+MAIN:   LACC    SCIRXBUF
+        SUB     #0059H
+        BCND    SEND_CHAR,EQ
+        B       MAIN
+
+
+WAIT1:  LACC    #03FFH          ;THIS WAIT TIME WILL BE CHANGE IF THE 40MHz CHANGE
+	SFL
+LOOP1:  SUB     #01H
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	BCND	LOOP1,GT
+	RET
+
+
+SEND_CHAR:
+        NOP
+        CALL    WAIT1
+        NOP
+        NOP
+        SPLK    #0054H,SCITXBUF         
+        NOP
+        NOP
+        CALL    WAIT1
+        NOP
+	NOP
+        SPLK    #0054H,SCITXBUF
+        NOP
+        NOP
+        CALL    WAIT1
+        NOP
+        NOP
+S:      B       S
+
+
+

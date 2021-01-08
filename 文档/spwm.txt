@@ -1,0 +1,122 @@
+利用定时器来改变脉宽。
+程序如下：
+; THIS IS PWM TEST PROGRAM===PWMTEST1.ASM
+	
+
+        .INCLUDE   "INIT.H"
+
+        .DATA
+SINWAVE .word  0088H
+        .WORD  0078H
+        .WORD  0068H
+        .WORD  0058H
+        .WORD  0047H
+
+        .SECT   ".VEC"
+
+RSVECT		B	START
+INT1            B       INT1_DO
+INT2            B       DD
+INT3            B       LOADCOUNT
+
+
+	.TEXT
+START:  LDPK    #232
+        
+        SPLK    #1110000001101010B,GPTCON
+	;GPTCON ：GP定时器控制寄存器
+        
+        SPLK	#0000011001100110B,ACTR		;GP TIMER CONTROL
+	;ACTR： 全比较动作控制寄存器
+
+	SPLK	#0000010111100000B,DBTCON	;TIMER CONTROL
+	;DBTCON：死区定时器控制寄存器
+
+        SPLK    #0008H,CMPR1
+        SPLK    #008CH,CMPR2
+        SPLK    #0081H,CMPR3
+	;CMPRx：全比较的比较寄存器
+
+        SPLK    #04B4H,T1PR
+        SPLK    #0F4B4H,T2PR
+	;TxPR：周期寄存器
+
+        SPLK    #0043H,T2CMPR
+	;TxCMPR: 定时器比较寄存器
+
+        SPLK    #0100101101010111B,COMCON
+        SPLK    #1100101101010111B,COMCON
+	;COMCON：比较控制寄存器
+
+;        SPLK    #0780H,EVIMRA
+        SPLK    #0002H,EVIMRB
+	;EV中断屏蔽寄存器B
+
+        SPLK    #0A842H,T1CON
+        SPLK    #0904AH,T2CON
+	;TxCON ：GP定时器控制寄存器
+
+
+
+        LDP     #0
+        LACC    IFR
+        SACL    IFR
+        SPLK    #0004H,IMR
+        CLRC    INTM
+
+
+LOOP:  
+        NOP
+        NOP
+        NOP
+
+        B       LOOP
+
+LOADCOUNT:      LDP     #232
+                LACL    EVIVRB
+                SUB     #002CH
+                BCND    CHANGE,EQ
+                RET
+
+CHANGE:         LDP     #232
+                SPLK    #0422H,CMPR1
+                NOP
+                NOP
+                NOP
+                RET
+
+
+INT1_DO:        LDP     #232
+                SPLK    #0322H,CMPR1
+                NOP
+                NOP
+                NOP
+                SETC    INTM
+                B       INT1_DO
+                RET
+       
+
+
+
+
+其CMD文件如下：
+SPWM1.obj
+-o SPWM1.out
+-m SPWM1.map
+MEMORY
+{
+  PAGE 0:
+   EPROM: org=0100h,len=2000h
+   VEC:   org=0000h,len=0040h
+  PAGE 1:
+    B0:   org=200h,len=100h
+    B1:   org=300h,len=100h
+    B2:   org=60h,len=20h
+}
+SECTIONS
+{
+  .text:>  EPROM	PAGE 0
+  .data:>  B0           PAGE 1
+  .bss:>   B1           PAGE 1
+}
+

@@ -1,0 +1,90 @@
+;考虑到目前的编程速度和难度，初步程序改为仅响应运行键和方向键。
+	.BSS	RUNNUM,1		;防抖动计数器
+	.BSS	STOPNUM,1		
+	.BSS 	SETNUM,1		
+	.BSS	RIGHTNUM,1
+	.BSS	LEFTNUM,1
+	.BSS	UPNUM,1
+	.BSS	DOWNNUM,1
+	.BSS	KEYSET,1		;功能计数器
+	.BSS	KEYRIGHT,1
+	.BSS	KEYUP,1
+	.BSS	KEYDOWN,1
+	.BSS	KEYDATA,1		;变数计数器
+	.BSS	KEYMODE,1		;按键状态标志变量
+	.BSS	KEYCOUNT,1		;防抖动计数器
+COSTANT1	.SET	#300		;防抖动常数
+
+;设想按键会有哪些情况：
+;首先是启动前，此时显示什么内容？响应哪些按键？
+;响应RUN键
+;在正常运行时，响应STOP键。
+;
+;
+;
+;RUN--IOPB0   STOP--IOPB1
+;
+;   
+;
+OCRA    .SET    07090H
+OCRB    .SET    07092H
+PADATDIR.SET    07098H 
+PBDATDIR.SET    0709AH
+PCDATDIR.SET    0709CH
+PDDATDIR.SET    0709EH
+ISRA    .SET    07094H
+ISRB    .SET    07096H
+
+	.TEXT
+START:	LDP     #0E1H                 
+	SPLK	#0000H,OCRA
+	SPLK	#0000H,OCRB    
+MAIN:	CALL	KEYPRESS
+	CALL	SHOW
+	B	MAIN
+	
+KEYPRESS:	LDP	#0E1H
+		BIT	PBDATDIR,BIT1		;判断“停止”按键
+		BCND	KEYPRESS2,NTC		;如果未按，则接着判断下个按键
+		LDP	#04			;
+		LACC	KEYCOUNT		;
+		ADD	#1			;将KEYCOUNT中的值加1
+		SACL	KEYCOUNT		;
+		SUB	#COSTANT1		;与300比较，如果比之大，则认为按了“停止”键
+		BCND	STOPPRESS,GT		;跳至停止按键服务程序
+		B	KEYPRESS1		;结束判断，但保留KEYCOUNT的值
+KEYPRESS2:	LDP	#0E1H			;
+		BIT	PBDATDIR,BIT0		;判断“运行”按键
+		BCND	KEYPRESS3,NTC		;如果未按，跳至KEYPRESS3
+		LDP	#04			;
+		LACC	KEYCOUNT		;
+		ADD	#1			;
+		SUB	#CONSTANT1		;
+		SACL	KEYCOUNT		;
+		BCND	RUNPRESS,GT		;跳至运行按键服务程序
+		B	KEYPRESS1		;结束判断，但保留KEYCOUNT的值
+KEYPRESS3:	LDP	#04			;表示未按任何键，则将KEYCOUNT值清零
+		SPLK	#0,KEYCOUNT		;
+KEYPRESS1:	RET				;返回
+
+
+
+
+RUNPRESS:	LDP 	#4
+		SPLK	#0,KEYCOUNT
+		CALL	RUNSHOW
+;;
+;;;;		此处加入运行的子程序
+;;;;
+		B	MAIN
+
+
+STOPPRESS:	LDP	#04
+		SPLK	#0,STOPNUM
+		CALL	STOPSHOW
+;;
+;;		此处加入停止运行的子程序
+;;
+		B	MAIN
+
+RUNSHOW:	SPLK   

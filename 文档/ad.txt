@@ -1,0 +1,59 @@
+A/D 部分
+将+5V电压直接输入至AD4，通过值的判断在P0.0口输出一个方波或一个高电平。程序如下：
+; THIS IS  AD TEST PROGRAM===ADTEST1.ASM
+
+        .INCLUDE   "INIT.H"
+
+        .TEXT
+        LDPK    #224
+        SPLK    #1011110000000111B,ADCTRL1
+        SPLK    #0000000000000111B,ADCTRL2
+        NOP
+        NOP
+        NOP
+        NOP
+        LDP     #6
+        BLPD    #ADCFIFO1,00H
+        BIT     0H,3
+        CC      LOOP1,TC
+        CALL    LOOP2
+
+
+
+LOOP1:  LDPK    #0E1H                   
+	SPLK	#0000H,OCRA
+	SPLK	#0000H,OCRB    
+
+        SPLK    #0101H,PADATDIR
+	CALL    WAIT1
+
+        SPLK    #0100H,PADATDIR
+	CALL    WAIT1
+        B       LOOP1
+        RET
+
+LOOP2:  LDPK    #0E1H                   
+	SPLK	#0000H,OCRA
+	SPLK	#0000H,OCRB    
+
+        SPLK    #0101H,PADATDIR  
+	CALL    WAIT1
+
+        SPLK    #0101H,PADATDIR
+	CALL    WAIT1
+        B       LOOP2
+        RET
+
+
+
+WAIT1:  LACC    #0FFFH
+	SFL
+WAIT2:  SUB     #01H
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+        BCND    WAIT2,GT
+        RET
+

@@ -1,0 +1,693 @@
+;********************************************************************
+;	T1定时器中断子程序
+;********************************************************************
+
+		.TEXT
+LOADCOUNT:   	SST 	#0,STK1 			;保存状态寄存器 ST0 - Forced Page 0
+		SST 	#1,STK2 			;保存状态寄存器 ST1 - Forced Page 0
+		LDP	#0
+		SACL 	STK3 				;保存 ACCL
+		SACH 	STK4 				;保存 ACCH
+		LDP     #232				;中断判断
+                LACL    EVIVRA
+                SUB     #0027H
+                BCND    CHANGE1,EQ
+		B	LOOP1               
+
+CHANGE1:   	NOP
+		LDP	#0E0H
+		BIT	SPIPC2,BIT7			;如果SPISIMO=1 为独立逆变状态;SPISIMO=0 为并网状态
+		BCND	DO301,NTC
+		CALL	CHANGE102			;独立逆变
+		B	LOOP1
+DO301:		CALL	CHANGE101			;并网
+LOOP1:		CLRC	SXM
+
+
+		LDP	#224
+	        SPLK    #1111100001011010B,ADCTRL1	;设置A/D控制,启动前后级电压控制
+	        SPLK    #0000000000000110B,ADCTRL2
+TT4:		LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    TT4,TC 		
+	
+		LACC	ADCFIFO1
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	U2AD1
+
+		LDP	#224				;读入后级直流电压的A/D值
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	DCVOL1USE	
+
+
+
+
+
+
+TT5:		LDP 	#232 		
+		LACC 	EVIFRA 				;Load EVIFRA - Type A Interrupt  Flags
+
+		SACL    EVIFRA 				;Clear the Interrupt Flags
+		LDP	#0
+  		ZALH 	STK4 				; restore ACCH
+		ADDS 	STK3 				; restore ACCL
+		LST 	#1,STK2 			; restore ST1
+		LST 	#0,STK1 			; restore ST0
+		CLRC 	INTM 				;Enable Interrupts
+		RET
+
+;********************************************************************
+;	独立逆变子程序
+;********************************************************************
+
+CHANGE102:	NOP
+		CLRC	SXM
+		LDP	#4
+		BIT	KEYMODE,BIT15
+		BCND	DO117,TC
+TT9:		LDP	#232
+	     	SPLK	#0000100110011001B,ACTR
+		SPLK    #1000100001010111B,COMCON
+		
+		B	LOOP104
+
+DO117:		LDP	#4
+		LACC	RUNTAG
+		BCND	TT9,EQ
+
+		LDP	#232
+		SPLK	#0000100110011001B,ACTR
+		SPLK    #1000101001010111B,COMCON
+
+
+		LDP	#224
+		SPLK    #1111000001100000B,ADCTRL1	;使能ADCIN14,进行独立逆变时电路中电压的A/D
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP7:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP7,TC 
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ACVOL21
+		
+		
+		LDP	#224
+		SPLK    #1111000001100000B,ADCTRL1	;使能ADCIN14,进行独立逆变时电路中电压的A/D
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP5:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP5,TC 
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ACVOL22
+	
+		LACC	ACVOL21
+		ADD	ACVOL22
+		SFR
+		SUB	AD3MID
+		SACL	VDATA4
+;----------------------------------------------------
+;	从独立逆变交流电压表格中读取数据
+;----------------------------------------------------
+		SETC    SXM	
+		LDP	#4
+		LACC	PWMCOUNT4
+		ADD	PWMADDRESS4
+		TBLR	ACVOLDAT1
+		LACC	ACVOLDAT1
+		SUB	PWMADD
+		SACL	ACVOLDAT1
+;----------------------------------------------------
+;	经过计算得出实际的给定电压
+;----------------------------------------------------
+		LDP	#4
+		LACC	U2AD1
+		SACL	MPY1
+;		SPLK	#180,MPY1
+		SPLK	#11,MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		SPLK	#20,DIVID2				;U(实际的给定平均电压)=198*U2AD/360=11*U2AD/20	
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	ACVOLDAT6				;得出实际的给定平均电压	
+		LACC	ACVOLDAT6
+		SUB	#176
+		BCND	TT11,LT
+		SPLK	#176,ACVOLDAT6
+TT11:		LACC	ACVOLDAT6
+		SUB	ACVOLAVE
+		SACL	ACVOLDAT3		
+		LACC	ACVOLDAT3
+		ADD	ACLEAVE1
+		SACL	DIVID1
+		LACC	ACVOLK2
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	ACVOLDAT4
+		LACC	DIVRESULT2
+		SACL	ACLEAVE1
+	
+;----------------------------------------------------
+;	计算输出的PWM脉宽	
+;----------------------------------------------------	
+		LDP	#4
+		NOP
+		NOP
+		SETC	SXM
+		LACC	ACVOLDAT4
+		ADD	PDATA1
+		SACL	MPY1
+		LACC	ACVOLDAT1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		LACC	ACVOLDAT6
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SFR
+		SFR
+;		SFR
+		ADD	ACVOLDAT1
+		SACL	ACVOLDAT5	
+
+		LACC	ACVOLDAT5
+		SACL	LIMIT2
+		CALL	ACLIMIT
+		LACC	LIMIT2
+		SACL	ACVOLDAT5
+;----------------------------------------------------
+;	输出脉宽
+;----------------------------------------------------	
+		LACC	ACVOLDAT5		;最后输出脉宽
+		ADD	PWMADD
+		
+		LDP     #232
+		SACL	CMPR1
+
+		LDP	#4
+		LACC	PWMADD
+		SUB	ACVOLDAT5
+	
+		LDP     #232
+		SACL	CMPR2
+
+		
+		LDP	#4
+		LACC	VDATA4
+		ABS
+		ADD	ACVOLCOU
+		SACL	ACVOLCOU	
+
+		LDP     #4
+		
+        	LACC    PWMCOUNT4
+                ADD     #1
+                SACL    PWMCOUNT4
+		SUB     #150
+	        BCND    LOOP105,LT
+		SPLK    #0,PWMCOUNT4
+
+LOOP105:	LACC	PWMCOUNT5
+		ADD	#1
+		SACL	PWMCOUNT5
+		SUB	#75
+		BCND	TT21,LT
+		SPLK	#0,PWMCOUNT5
+		LDP	#4
+		LACC	ACVOLCOU
+		SACL	DIVID1
+		SPLK	#75,DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	MPY1
+		SPLK	#5,MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		SPLK	#6,DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	ACVOLAVE
+		SPLK	#0,ACVOLCOU
+	
+TT21:		LDP	#4
+		LACC	ACVOLDAT3
+		ADD	ACLEAVE
+		SACL	DIVID1
+		LACC	ACVOLK4
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	PDATA3
+		LACC	DIVRESULT2
+		SACL	ACLEAVE
+		LACC	PDATA3
+		ADD	PDATA1
+		SACL	PDATA1
+		
+		LACC	PDATA1
+		ADD	#50
+		BCND	LJUDGE105,GT
+		SPLK	#0,PDATA1
+		LACC	PDATA1
+		SUB	#50
+		SACL	PDATA1
+		B	LOOP104
+LJUDGE105:	LACC	PDATA1
+		SUB	#50
+		BCND	LOOP104,LT
+		SPLK	#50,PDATA1
+		
+		
+LOOP104:	NOP
+		RET
+
+;********************************************************************
+;	并网子程序
+;********************************************************************
+
+CHANGE101:	NOP		   	
+		SETC	SXM
+		LDP	#4
+
+		LACC	KEYTEMP3
+		SUB	SETCURRENT1
+		BCND	CHANGE11,EQ
+	
+		LACC	SLOW3
+		SUB	#50
+		BCND	CHANGE11,LT
+	
+		SPLK	#0,SLOW3
+
+		LACC	KEYTEMP3
+		SUB	SETCURRENT1
+		BCND	CHANGE12,GT
+		LACC	SETCURRENT1
+		SUB	#1
+		SACL	SETCURRENT1
+		B	CHANGE11
+		
+CHANGE12:	LACC	SETCURRENT1
+		ADD	#1
+		SACL	SETCURRENT1
+
+
+
+CHANGE11:	CLRC	SXM
+		
+		LDP	#4
+		LACC	SETCURRENT1
+		SUB	#10
+		BCND	CHANGE16,GT
+		SPLK	#5,SPWM1
+		B	CHANGE13
+CHANGE16:	ADD	#10
+		SUB	#15
+		BCND	CHANGE17,GT
+		SPLK	#6,SPWM1
+		B	CHANGE13
+CHANGE17:	ADD	#15
+		SUB	#20
+		BCND	CHANGE18,GT
+		SPLK	#7,SPWM1
+		B	CHANGE13
+CHANGE18:	ADD	#20
+		SUB	#25
+		BCND	CHANGE19,GT
+		SPLK	#8,SPWM1
+		B	CHANGE13
+CHANGE19:	ADD	#25
+		SUB	#27
+		BCND	CHANGE20,GT
+		SPLK	#9,SPWM1
+		B	CHANGE13
+CHANGE20:	ADD	#27
+		SUB	#30
+		BCND	CHANGE21,GT
+		SPLK	#11,SPWM1
+		B	CHANGE13
+CHANGE21:	ADD	#30
+		SUB	#35
+		BCND	CHANGE22,GT
+		SPLK	#12,SPWM1
+		B	CHANGE13
+CHANGE22:	ADD	#35
+		SUB	#40
+		BCND	CHANGE23,GT
+		SPLK	#14,SPWM1
+		B	CHANGE13
+CHANGE23:	SPLK	#16,SPWM1
+		
+CHANGE13:	NOP
+		CLRC	SXM
+		LDP	#224
+		SPLK    #1111100001111100B,ADCTRL1
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP1:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP1,TC 
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ADDATA1
+		LDP	#224
+		
+		LACC	ADCFIFO1
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	PWMAD1
+		
+ 		LDP	#224
+		SPLK    #1111100001111100B,ADCTRL1
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP2:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP2,TC 
+
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ADDATA2
+		
+		LDP	#224
+		LACC	ADCFIFO1
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	PWMAD2
+
+;----------------------------------------------------
+;CURRENT A/D  JUDGELIMIT		
+;----------------------------------------------------	
+		SETC	SXM
+
+		LDP	#4
+		LACC	WDATA5
+		ADD	AD2MID		
+		SACL	ADDATA3
+		LACC	ADDATA1
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA4
+		LACC	ADDATA2
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA5
+
+		LACC	ADDATA4
+		SUB	ADDATA5
+		BCND	DO70,GT
+		LACC	ADDATA1
+		SACL	ADDATA		
+		B	DO71
+
+DO70:		LACC	ADDATA2
+		SACL	ADDATA
+
+DO71:		LACC	ADDATA
+		SUB	AD2MID
+		SACL	WDATA4
+
+;----------------------------------------------------
+;VOLTAGE A/D  JUDGELIMIT		
+;----------------------------------------------------	
+		SETC	SXM
+		LDP	#4
+		LACC	TDATA5
+		ADD	AD1MID		
+		SACL	ADDATA3
+		LACC	PWMAD1
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA4
+		LACC	PWMAD2
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA5
+
+		LACC	ADDATA4
+		SUB	ADDATA5
+		BCND	DO80,GT
+		LACC	PWMAD1
+		SACL	PWMAD		
+		B	DO81
+
+DO80:		LACC	PWMAD2
+		SACL	PWMAD
+
+DO81:		LACC	PWMAD
+		SUB	AD1MID
+		SACL	TDATA4
+
+		
+;----------------------------------------------------
+;CURRENT A/D  LIMIT		
+;----------------------------------------------------	
+		LDP	#4
+		LACC	ADDATA1
+		SUB	AD2MID
+		ABS
+		SUB	#400
+		BCND	JUDGE50,LT
+		LDP	#232
+	        SPLK    #0000100001010111B,COMCON
+BAD1:		KICK_DOG
+		B	BAD1	
+JUDGE50:	LDP	#4
+		LACC	ADDATA2
+		SUB	AD2MID
+		ABS
+		SUB	#400
+		BCND	JUDGE51,LT
+		LDP	#232
+	        SPLK    #0000100001010111B,COMCON
+BAD2:		KICK_DOG
+		B	BAD2	
+
+
+
+
+;----------------------------------------------------
+;CURRENT A/D AND VOLTAGE A/D PREWANT	
+;----------------------------------------------------	
+		SETC	SXM
+JUDGE51:	CALL	ADWANT05
+		CALL	PWMWANT05
+
+		SETC	SXM
+		
+;----------------------------------------------------
+;READ LIST TO GET DATA	
+;----------------------------------------------------	
+		LDP	#4
+		LACC	PWMCOUNT3
+		ADD	PWMADDRESS1
+		TBLR	ADCALU1
+		LACC	ADCALU1
+		SUB	PWMADD
+		SACL	MPY1
+		LACC	U2K1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SFR
+		SACL	MPY1
+		LACC	SETCURRENT1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		LACC	U2AD1
+		SFR				
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SFL
+		SACL	NEWCAMP	
+		
+
+		
+JUDGE90:	LDP	#4
+		LACC    PWMCOUNT1
+                ADD     PWMADDRESS
+		TBLR	NEWCAMP1
+		
+		LDP	#4
+		LACC	PWMCOUNT2
+		ADD	PWMADDRESS
+		TBLR	NEWCAMP7
+		LACC	NEWCAMP7
+		SUB	PWMADD
+		SACL	MPY1
+		LACC	SETCURRENT1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	NEWCAMP21
+		
+		LACC	WDATA5
+		SACL	MPY1
+		LACC	ADK1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		NEG
+		SUB	NEWCAMP21
+		ADD	ACLEAVE
+		SACL	NEWCAMPT1
+		
+		SACL	DIVID1
+		LACC	SPWM1
+		SACL	DIVID2
+		
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	NEWCAMP2
+		LACC	DIVRESULT2
+		SACL	ACLEAVE
+
+
+		
+;----------------------------------------------------
+;CALU THE PWM VALUE TO EQUAL THE NET VOLTAGE	
+;----------------------------------------------------	
+		LACC	TDATA5
+		SACL	MPY1
+		LACC	PWMM1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		SPLK	#22,DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	SPWM2
+
+
+		
+		LACC	NEWCAMP2
+		ADD	FDATA1
+		SACL	NEWCAMP3
+		
+;   		SPLK	#0,NEWCAMP3
+				
+
+LJUDGE11:	LACC	NEWCAMP
+		ADD	NEWCAMP3
+		SUB	SPWM2
+		SACL	NEWCAMPT2
+		LACC	NEWCAMPT2
+	
+		SACL	LIMIT1
+		CALL	LIMIT
+		LACC	LIMIT1
+		SACL	NEWCAMPT2
+;----------------------------------------------------
+;	OUT THE PULSE
+;----------------------------------------------------	
+		LACC	NEWCAMPT2		;最后输出脉宽
+		ADD	PWMADD
+		
+		LDP     #232
+		SACL	CMPR1
+		LDP	#4
+		LACC	PWMADD
+		SUB	NEWCAMPT2
+		
+		LDP     #232
+		SACL	CMPR2
+;----------------------------------------------------
+;	OTHER CALCU
+;----------------------------------------------------	
+		
+		LDP	#4
+		LACC	WDATA2
+		SACL	WDATA1
+		LACC	WDATA3
+		SACL	WDATA2
+		LACC	WDATA4
+		SACL	WDATA3
+
+
+		LACC	TDATA2
+		SACL	TDATA1
+		LACC	TDATA3
+		SACL	TDATA2
+		LACC	TDATA4
+		SACL	TDATA3
+
+	
+		LDP	#4
+		LACC	NEWCAMPT1
+		ADD	ACLEAVE1
+		SACL	DIVID1
+		LACC	PWMK2
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	FDATA3
+		LACC	DIVRESULT2
+		SACL	ACLEAVE1
+		LACC	FDATA3
+		ADD	FDATA1
+		SACL	FDATA1
+	
+		LACC	FDATA1
+		ADD	#100
+		BCND	LJUDGE5,GT
+		SPLK	#0,FDATA1
+		LACC	FDATA1
+		SUB	#100
+		SACL	FDATA1
+		B	LJUDGE6
+LJUDGE5:	LACC	FDATA1
+		SUB	#100
+		BCND	LJUDGE6,LT
+		SPLK	#100,FDATA1
+
+
+LJUDGE6:	LDP     #4
+        	LACC    PWMCOUNT1
+                ADD     #1
+                SACL    PWMCOUNT1
+		SUB     #150
+	        BCND    LOOP4,LT
+		SPLK    #0,PWMCOUNT1
+LOOP4:		LDP     #4
+        	LACC    PWMCOUNT2
+                ADD     #1
+                SACL    PWMCOUNT2
+		SUB     #150
+	        BCND    LOOP6,LT
+		SPLK    #0,PWMCOUNT2
+LOOP6:	      	NOP
+		LDP     #4
+        	LACC    PWMCOUNT3
+	        ADD     #1
+                SACL    PWMCOUNT3
+		SUB     #150
+ 	        BCND    LOOP7,LT
+		SPLK    #0,PWMCOUNT3
+LOOP7:		NOP
+		RET
+
+DD:		RET
+

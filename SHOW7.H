@@ -1,0 +1,1483 @@
+	.TEXT
+;--------------------------------------------------------------------
+;	LCD 初始化子程序
+;--------------------------------------------------------------------
+
+SHOWINT:LDP	#4
+	SPLK	#0E2H,SHOWCOM	;复位
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	SPLK	#0A4H,SHOWCOM	;关闭等待状态
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	SPLK	#0A9H,SHOWCOM	;设置1/32占空比
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	SPLK	#0A0H,SHOWCOM	;正向排序设置
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	SPLK	#0C0H,SHOWCOM	;设置显示起始行为第一行
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	SPLK	#0AFH,SHOWCOM	;开显示设置
+	CALL	PR0
+	CALL	PR3
+	
+
+	CALL    CLEAR		;调用清屏子程序
+
+	RET
+
+;--------------------------------------------------------------------
+;	目前显示固定字符的子程序：  RUN_SHOW1
+;--------------------------------------------------------------------
+
+
+
+;show "IN  CUR        A"
+;SHOW "IN  VOL        V"      
+;SHOW "OUT CUR        A"
+;SHOW "OUT VOL        V"
+;SHOW POISITION  04 0C 14 1C 24 2C  34  3C  44 4C 54 5C
+;can show 12*8 letter a line
+;show poisition  04 0A 10 16 1C 22  28  2E  34 
+;3A 40 46 4C  52  58  5E
+;CAN show 16*6 letter a line 
+RUN_SHOW1:	LDP	#4		; IN
+	SPLK	#0,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#15H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 2*BLANK
+	SPLK	#0,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; CUR
+	SPLK	#0,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4		;A
+	SPLK	#0,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#0DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; IN
+	SPLK	#1,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#15H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 2*BLANK
+	SPLK	#1,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; VOL
+	SPLK	#1,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#18H,SHOWCODE
+	CALL	CW_PR
+
+
+
+	LDP	#4		;V
+	SPLK	#1,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+	
+	LDP	#4		; OUT
+	SPLK	#2,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; CUR
+	SPLK	#2,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4		;A
+	SPLK	#2,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#0DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; OUT
+	SPLK	#3,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; VOL
+	SPLK	#3,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#18H,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4		;V
+	SPLK	#3,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+
+	RET
+
+
+;--------------------------------------------------------------------
+;	显示设定状态字符的子程序：  SET_SHOW1
+;--------------------------------------------------------------------
+
+
+
+
+;SHOW "CON VOL        V"      
+;SHOW "CON CUR        A"
+
+;SHOW POISITION  04 0C 14 1C 24 2C  34  3C  44 4C 54 5C
+;can show 12*8 letter a line
+;show poisition  04 0A 10 16 1C 22  28  2E  34 
+;3A 40 46 4C  52  58  5E
+;CAN show 16*6 letter a line 
+SET_SHOW1:	
+
+	LDP	#4		; CON
+	SPLK	#1,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 
+	SPLK	#1,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 1*BLANK
+	SPLK	#1,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; VOL
+	SPLK	#1,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#18H,SHOWCODE
+	CALL	CW_PR
+
+
+
+	LDP	#4		;V
+	SPLK	#1,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+	
+	LDP	#4		; CON
+	SPLK	#2,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; CUR
+	SPLK	#2,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+
+
+	LDP	#4		;A
+	SPLK	#2,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#0DH,SHOWCODE
+	CALL	CW_PR
+
+
+	RET
+;--------------------------------------------------------------------
+;	显示数字的子程序：  DATA_SHOW1
+;--------------------------------------------------------------------
+
+DATA_SHOW1:
+	LDP	#4
+	LACC	KEYTEMP3
+	SACL	DIVID1
+	SPLK	#10,DIVID2
+	CALL	DIVIDSUB
+	LACC	DIVRESULT1
+	SACL	KEYTEMP31
+	LACC	DIVRESULT2
+	SACL	KEYTEMP32
+
+	LDP	#4			
+	LACC	KEYTEMP31
+	BCND	DATA_SHOW11,EQ
+
+	SPLK	#2,SHOWPAGE
+	SPLK	#4CH,SHOWCOLUMN
+	LACC	KEYTEMP31
+	ADD	#02H
+	SACL	SHOWCODE
+	CALL	CW_PR
+
+
+DATA_SHOW11:
+	LDP	#4
+	SPLK	#2,SHOWPAGE
+	SPLK	#54H,SHOWCOLUMN
+	LACC	KEYTEMP32
+	ADD	#02H
+	SACL	SHOWCODE
+	CALL	CW_PR
+
+	RET
+;--------------------------------------------------------------------
+;	显示固定字符的子程序：  RUN_SHOW2
+;--------------------------------------------------------------------
+
+;show "DC  CUR        A"
+;SHOW "DC  VOL        V"      
+;SHOW "NET FREQ      Hz"
+;SHOW "OUT FREQ      Hz"
+;SHOW POISITION  04 0C 14 1C 24 2C  34  3C  44 4C 54 5C
+;can show 12*8 letter a line
+;show poisition  04 0A 10 16 1C 22  28  2E  34 
+;3A 40 46 4C  52  58  5E
+;CAN show 16*6 letter a line 
+RUN_SHOW2:	LDP	#4		; DC
+	SPLK	#0,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#10H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 2*BLANK
+	SPLK	#0,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; CUR
+	SPLK	#0,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#0,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4		;A
+	SPLK	#0,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#0DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; DC
+	SPLK	#1,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#10H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#0FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; 2*BLANK
+	SPLK	#1,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; VOL
+	SPLK	#1,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#1,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#18H,SHOWCODE
+	CALL	CW_PR
+
+
+
+	LDP	#4			;V
+	SPLK	#1,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#22H,SHOWCODE
+	CALL	CW_PR
+	
+	LDP	#4			; NET
+	SPLK	#2,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#11H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			;1*BLANK	
+	SPLK	#2,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			; FREQ
+	SPLK	#2,SHOWPAGE
+	SPLK	#1AH,SHOWCOLUMN
+	SPLK	#12H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#20H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#26H,SHOWCOLUMN
+	SPLK	#11H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#2CH,SHOWCOLUMN
+	SPLK	#1DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			;1*BLANK	
+	SPLK	#2,SHOWPAGE
+	SPLK	#33H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4			;Hz
+	SPLK	#2,SHOWPAGE
+	SPLK	#58H,SHOWCOLUMN
+	SPLK	#14H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#27H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			; OUT
+	SPLK	#3,SHOWPAGE
+	SPLK	#04H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#0AH,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			;1*BLANK	
+	SPLK	#3,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			; FREQ
+	SPLK	#3,SHOWPAGE
+	SPLK	#1AH,SHOWCOLUMN
+	SPLK	#12H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#20H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#26H,SHOWCOLUMN
+	SPLK	#11H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#2CH,SHOWCOLUMN
+	SPLK	#1DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4			;1*BLANK	
+	SPLK	#3,SHOWPAGE
+	SPLK	#34H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+
+	LDP	#4			;Hz
+	SPLK	#3,SHOWPAGE
+	SPLK	#58H,SHOWCOLUMN
+	SPLK	#14H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#5EH,SHOWCOLUMN
+	SPLK	#27H,SHOWCODE
+	CALL	CW_PR
+	RET
+
+;--------------------------------------------------------------------
+;	STOP状态时显示的固定字符子程序
+;--------------------------------------------------------------------
+
+STOP_SHOW:	LDP	#4		; PRESS THE RUN
+	SPLK	#2,SHOWPAGE		;   TO  START
+	SPLK	#10H,SHOWCOLUMN
+	SPLK	#1CH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#16H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#11H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#1FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#2EH,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#35H,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#3BH,SHOWCOLUMN
+	SPLK	#14H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#41H,SHOWCOLUMN
+	SPLK	#11H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#47H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#4DH,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#2,SHOWPAGE
+	SPLK	#53H,SHOWCOLUMN
+	SPLK	#21H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#2,SHOWPAGE
+	SPLK	#59H,SHOWCOLUMN
+	SPLK	#1AH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		; TO  START
+	SPLK	#3,SHOWPAGE
+	SPLK	#1CH,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#3,SHOWPAGE
+	SPLK	#22H,SHOWCOLUMN
+	SPLK	#1BH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#28H,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#3,SHOWPAGE
+	SPLK	#2EH,SHOWCOLUMN
+	SPLK	#01H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#35H,SHOWCOLUMN
+	SPLK	#1FH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#3,SHOWPAGE
+	SPLK	#3BH,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#41H,SHOWCOLUMN
+	SPLK	#0DH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		 
+	SPLK	#3,SHOWPAGE
+	SPLK	#47H,SHOWCOLUMN
+	SPLK	#1EH,SHOWCODE
+	CALL	CW_PR
+
+	LDP	#4		
+	SPLK	#3,SHOWPAGE
+	SPLK	#4DH,SHOWCOLUMN
+	SPLK	#20H,SHOWCODE
+	CALL	CW_PR
+	RET
+
+
+;--------------------------------------------------------------------
+;	LCD 清屏子程序
+;--------------------------------------------------------------------
+
+CLEAR:	LDP	#4			;页面地址暂存器设置
+        SPLK 	#0,SHOWTEMP1
+CLEAR1:	LDP	#4			;取页地址值			
+	LACC	SHOWTEMP1
+	OR	#0B8H			;“或”页面地址设置代码
+	SACL	SHOWCOM			;页面地址设置
+	CALL	PR0		
+	CALL	PR3
+	LDP	#4			;页地址设置为“0”，因为页地址
+	SPLK	#0,SHOWCOM		;自动增一，所以勿需再次赋值
+	CALL	PR0
+	CALL	PR3
+	MAR	*,AR2			;一页清80个字节
+	LAR	AR2,#80
+CLEAR2:	LDP	#4
+	SPLK	#0H,SHOWDAT		;显示数据为“0”
+	CALL	PR1
+	CALL	PR4
+	BANZ	CLEAR2			;页内字节清零循环
+	LDP	#4
+	LACC	SHOWTEMP1		;页地址暂存器加1
+	ADD	#1
+	SACL	SHOWTEMP1		;一共有四页，循环判断
+	SUB	#04
+	BCND	CLEAR1,LT
+	RET
+
+
+
+;--------------------------------------------------------------------
+;	LCD   英文字符写入子程序
+;--------------------------------------------------------------------
+
+
+CW_PR:	LDP	#4			;确定字符字模块首地址
+	SPLK	#ETAB,SHOWTEMP3	
+	LT	SHOWCODE		;取代码
+	MPY	#8			;字模块宽度为8个字节
+	PAC
+	ADD	SHOWTEMP3
+	SACL	SHOWTEMP2		;SHOWTEMP2=ETAB+SHOWCODE*8
+	LDP	#4
+	LACC    SHOWCOLUMN		;列地址暂存入SHOWTEMP3中
+	SACL	SHOWTEMP3
+	SPLK	#0,SHOWCODE		;代码寄存器借用为间址寄存器
+	LACC	SHOWPAGE		;读页地址寄存器
+	BIT	SHOWPAGE,8		;判字符体
+	BCND	CW_1,TC
+	SPLK	#06H,SHOWCOUNT1		;6*8点阵
+	B	CW_2
+CW_1:	LDP	#4
+	SPLK	#08H,SHOWCOUNT1		;计数器设置为8，8*8点阵
+CW_2:	LACC	SHOWPAGE		;读页地址设置指令
+	AND	#03H
+	OR	#0B8H			;“或”页地址设置代码
+	SACL	SHOWCOM			;写页地址设置指令
+	CALL	PR0
+	CALL	PR3
+	LDP	#4
+	LACC	SHOWTEMP3	     	;取出列地址值
+	SACL    SHOWCOLUMN
+	SUB	#SHOWPD1		;与列地址-模块参数比较
+	BCND	CW_3,LT			;判断是否在左或右半边
+	SACL	SHOWCOLUMN		;<0为左边（E1）
+	LACC	SHOWPAGE		;>=0为右边（E2）
+	OR	#08H			;设置区域标志位		
+	SACL	SHOWPAGE		;0 为 E1，1 为 E2
+CW_3:	LDP	#4
+	LACC	SHOWCOLUMN		;设置列地址值
+	SACL	SHOWCOM
+	LACC	SHOWPAGE
+	BIT	SHOWPAGE,12		;判区域标志以确定设置哪个控制器
+	BCND	CW_4,NTC
+	CALL	PR3			;区域E2
+	B	CW_5
+CW_4:	CALL	PR0			;区域E1
+CW_5:	LDP	#4
+	LACC	SHOWTEMP2		;取字库首地址
+	ADD	SHOWCODE		;加上间址寄存器值
+	TBLR	SHOWDAT			;读出显示数据
+	BIT	SHOWPAGE,12		;确定区域，写显示数据
+	BCND	CW_6,NTC
+	CALL	PR4
+	B	CW_7
+CW_6:	CALL	PR1
+CW_7:	LDP	#4
+	LACC	SHOWCODE		;间址寄存器加1
+	ADD	#1
+	SACL	SHOWCODE
+	LACC	SHOWCOLUMN		;列地址加1
+	ADD	#1
+	SACL	SHOWCOLUMN
+	SUB	#SHOWPD1		;与模块显示常数比较，确定区域
+	BCND	CW_8,GT			;超出则判是否在区域E2
+	B	CW_9			;未超出则继续
+CW_8:	LACC	SHOWPAGE		;在区域E2则继续
+	BIT	SHOWPAGE,12
+	BCND	CW_9,TC
+	OR	#08H			;在区域E1则修改成E2
+	SACL	SHOWPAGE
+	SPLK	#0,SHOWCOM
+	CALL	PR3
+CW_9:	LACC	SHOWCOUNT1		
+	SUB	#1			;循环
+	SACL    SHOWCOUNT1
+	BCND    CW_5,GT
+	RET
+
+
+
+;--------------------------------------------------------------------
+;	LCD 显示基本子程序表
+;--------------------------------------------------------------------
+
+;A0---IOPB5
+;R/W---IOPB3
+;E1---IOPB7
+;E2---IOPB4
+;写指令代码子程序（E1）
+ 
+;                7654321076543210
+PR0:	LDP     #0E1H
+	NOP
+	
+	SPLK	#01011100000001000B,PBDATDIR	;R/W=1
+	
+	NOP
+PR01:	LDP	#4
+	NOP
+	SPLK    #0FFFFH,OUTDATA			
+	NOP
+	OUT	OUTDATA,8000H
+	NOP
+	NOP
+	LDP	#0E1H
+	NOP
+	NOP
+	NOP
+	SPLK	#01011100000000000B,PBDATDIR	;R/W=0
+	NOP
+	
+	NOP
+	LDP	#4
+	NOP
+        NOP
+        OUT     SHOWCOM,8000H
+	NOP
+	LDP	#0E1H
+	SPLK	#01011100010000000B,PBDATDIR	;E1=1
+	NOP
+	NOP
+	NOP
+	SPLK	#01011100000000000B,PBDATDIR	;E1=0
+	NOP
+	NOP
+	NOP
+	LDP	#4
+	RET
+
+;写显示数据子程序（E1）
+
+	 
+;                7654321076543210
+PR1:	LDP     #0E1H
+	NOP
+	SPLK	#01011100000001000B,PBDATDIR	;R/W=1
+	NOP
+	NOP
+	NOP
+PR11:	LDP	#4
+	SPLK    #0FFFFH,OUTDATA			
+	NOP
+	OUT	OUTDATA,8000H
+	NOP
+	NOP
+	
+	LDP	#0E1H
+	NOP
+	NOP
+ 	SPLK	#01011100000101000B,PBDATDIR	;A0=1
+	NOP
+	NOP
+	SPLK	#01011100000100000B,PBDATDIR	;R/W=0,A0=1
+	NOP
+	NOP
+	LDP	#4
+	NOP
+        NOP
+        OUT     SHOWDAT,8000H
+	NOP
+	LDP	#0E1H
+	SPLK	#01011100010100000B,PBDATDIR	;E1=1
+	NOP
+	NOP
+	SPLK	#01011100000100000B,PBDATDIR	;E1=0
+	NOP
+	NOP
+	LDP	#4
+	RET
+
+;写指令代码子程序（E2）
+
+;                7654321076543210
+PR3:	LDP     #0E1H
+	NOP
+	SPLK	#01011100000001000B,PBDATDIR	;R/W=1
+	NOP
+	NOP
+PR31:	LDP	#4
+	SPLK    #0FFFFH,OUTDATA			
+	NOP
+	OUT	OUTDATA,8000H
+	NOP
+	NOP
+	NOP
+	LDP	#0E1H
+	NOP
+	SPLK	#01011100000000000B,PBDATDIR	;R/W=0
+	NOP
+	NOP
+	LDP	#4
+	NOP
+	NOP
+        OUT     SHOWCOM,8000H
+	NOP
+	LDP	#0E1H
+	SPLK	#01011100000010000B,PBDATDIR	;E2=1
+	NOP
+	NOP
+	NOP
+	SPLK	#01011100000000000B,PBDATDIR	;E2=0
+	NOP
+	NOP
+	LDP	#4
+	NOP
+	RET
+
+;写显示数据子程序（E2）
+
+	 
+;                7654321076543210
+PR4:	LDP     #0E1H
+	NOP
+	SPLK	#01011100000001000B,PBDATDIR	;R/W=1
+	NOP
+	NOP
+	NOP
+PR41:	LDP	#4
+	SPLK    #0FFFFH,OUTDATA			
+	NOP
+	OUT	OUTDATA,8000H
+	NOP
+	NOP
+	NOP
+	LDP	#0E1H
+	NOP
+	NOP
+	NOP
+ 	SPLK	#01011100000101000B,PBDATDIR	;A0=1
+	NOP
+	NOP
+	SPLK	#01011100000100000B,PBDATDIR	;R/W=0,A0=1
+	NOP
+	NOP
+	NOP
+	LDP	#4
+	NOP
+        NOP
+        OUT     SHOWDAT,8000H
+	NOP
+	LDP	#0E1H
+	SPLK	#01011100000110000B,PBDATDIR	;E2=1
+	NOP
+	NOP
+	NOP
+	SPLK	#01011100000100000B,PBDATDIR	;E2=0
+	NOP
+	LDP	#4
+	RET
+
+
+
+
+
+
+
+
+;--------------------------------------------------------------------
+;	LCD 点阵定义表
+;--------------------------------------------------------------------
+
+
+
+
+;对照表
+; .= 00H blank=01H
+;0=02H   1=03H	2=04H   3=05H    4=06H   5=07H  6=08H
+;7=09H   8=0AH  9=OBH   ==0CH 	 A=0DH 	 B=0EH
+;C=0FH	 D=10H	E=11H	F=12H	 G=13H	 H=14H	I=15H	
+;J=16H	 K=17H	L=18H	M=19H	 N=1AH	 O=1BH	P=1CH
+;Q=1DH	 R=1EH  S=1FH	T=20H	 U=21H   V=22H  W=23H
+;X=24H   Y=25H	Z=26H	z=27H	 0=28H	 1=29H  2=2AH
+;3=2BH	 4=2CH  5=2DH   6=2EH    7=2FH   8=30H  9=31H
+;show poisition  04 0A 10 16 1C 22  28  2E  34 
+;3A 40 46 4C  52  58  5E
+	.DATA
+ETAB: .WORD     000H
+      .WORD     000H
+      .WORD     060H
+      .WORD     060H
+      .WORD     000H
+      .WORD     000H      ; .=00H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H	   ;  BLANK=  01H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     051H
+      .WORD     049H
+      .WORD     045H
+      .WORD     03EH      ; 0 =   02H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     042H
+      .WORD     07FH
+      .WORD     040H
+      .WORD     000H      ; 1=03H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     042H
+      .WORD     061H
+      .WORD     051H
+      .WORD     049H
+      .WORD     046H      ; 2=04H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     021H
+      .WORD     041H
+      .WORD     045H
+      .WORD     04BH
+      .WORD     031H      ; 3=05H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     018H
+      .WORD     014H
+      .WORD     012H
+      .WORD     07FH
+      .WORD     010H      ; 4=06H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     027H
+      .WORD     045H
+      .WORD     045H
+      .WORD     045H
+      .WORD     039H      ; 5=07H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     049H
+      .WORD     049H
+      .WORD     049H
+      .WORD     032H      ; 6=08H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     001H
+      .WORD     001H
+      .WORD     079H
+      .WORD     005H
+      .WORD     003H      ; 7=09H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     036H
+      .WORD     049H
+      .WORD     049H
+      .WORD     049H
+      .WORD     036H      ; 8=0AH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     006H
+      .WORD     049H
+      .WORD     049H
+      .WORD     029H
+      .WORD     01EH      ; 9=OBH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     014H
+      .WORD     014H
+      .WORD     014H
+      .WORD     014H
+      .WORD     014H      ; = = 0CH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07EH
+      .WORD     011H
+      .WORD     011H
+      .WORD     011H
+      .WORD     07EH      ; A = 0DH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     041H
+      .WORD     07FH
+      .WORD     049H
+      .WORD     049H
+      .WORD     036H      ; B = 0EH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     041H
+      .WORD     041H
+      .WORD     041H
+      .WORD     022H      ; C  =0FH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     041H
+      .WORD     07FH
+      .WORD     041H
+      .WORD     041H
+      .WORD     03EH      ; D=10H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     049H
+      .WORD     049H
+      .WORD     049H
+      .WORD     049H      ; E=11H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     009H
+      .WORD     009H
+      .WORD     009H
+      .WORD     001H      ; F=12H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     041H
+      .WORD     041H
+      .WORD     049H
+      .WORD     07AH      ; G=13H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     008H
+      .WORD     008H
+      .WORD     008H
+      .WORD     07FH      ; H=14H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     041H
+      .WORD     07FH
+      .WORD     041H
+      .WORD     000H      ; I=15H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     020H
+      .WORD     040H
+      .WORD     041H
+      .WORD     03FH
+      .WORD     001H      ; J=16H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     008H
+      .WORD     014H
+      .WORD     022H
+      .WORD     041H      ; K=17H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     040H
+      .WORD     040H
+      .WORD     040H
+      .WORD     040H      ; L=18H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     002H
+      .WORD     00CH
+      .WORD     002H
+      .WORD     07FH      ; M=19H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     006H
+      .WORD     008H
+      .WORD     030H
+      .WORD     07FH      ; N=1AH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     041H
+      .WORD     041H
+      .WORD     041H
+      .WORD     03EH      ; O=1BH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     009H
+      .WORD     009H
+      .WORD     009H
+      .WORD     006H      ; P=1CH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03EH
+      .WORD     041H
+      .WORD     051H
+      .WORD     021H
+      .WORD     05EH      ; Q=1DH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     009H
+      .WORD     019H
+      .WORD     029H
+      .WORD     046H      ; R=1EH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     026H
+      .WORD     049H
+      .WORD     049H
+      .WORD     049H
+      .WORD     032H      ; S=1FH
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     001H
+      .WORD     001H
+      .WORD     07FH
+      .WORD     001H
+      .WORD     001H      ; T=20H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     03FH
+      .WORD     040H
+      .WORD     040H
+      .WORD     040H
+      .WORD     03FH      ; U=21H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     01FH
+      .WORD     020H
+      .WORD     040H
+      .WORD     020H
+      .WORD     01FH      ; V=22H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     07FH
+      .WORD     020H
+      .WORD     018H
+      .WORD     020H
+      .WORD     07FH      ; W=23H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     063H
+      .WORD     014H
+      .WORD     008H
+      .WORD     014H
+      .WORD     063H      ; X=24H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     007H
+      .WORD     008H
+      .WORD     070H
+      .WORD     008H
+      .WORD     007H      ; Y=25H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     061H
+      .WORD     051H
+      .WORD     049H
+      .WORD     045H
+      .WORD     043H      ; Z=26H
+      .WORD     000H
+      .WORD     000H
+      .WORD     000H
+      .WORD     044H
+      .WORD     064H
+      .WORD     054H
+      .WORD     04CH
+      .WORD     044H      ; z=27H
+      .WORD     000H
+      .WORD     000H
+      .WORD     0FFH
+      .WORD     0C1H
+      .WORD     0AEH
+      .WORD     0B6H
+      .WORD     0BAH
+      .WORD     0C1H      ;- 0 =   28H
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0BDH
+      .WORD     080H
+      .WORD     0BFH
+      .WORD     0FFH      ;- 1=29H
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0BDH
+      .WORD     09EH
+      .WORD     0AEH
+      .WORD     0B6H
+      .WORD     0B9H      ; -2=2AH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0DEH
+      .WORD     0BEH
+      .WORD     0BAH
+      .WORD     0B4H
+      .WORD     0CEH      ; -3=2BH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0E7H
+      .WORD     0EBH
+      .WORD     0EDH
+      .WORD     080H
+      .WORD     0EFH      ;- 4=2CH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0D8H
+      .WORD     0BAH
+      .WORD     0BAH
+      .WORD     0BAH
+      .WORD     0C6H      ;- 5=2DH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0C1H
+      .WORD     0B6H
+      .WORD     0B6H
+      .WORD     0B6H
+      .WORD     0CDH      ; -6=2EH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FEH
+      .WORD     0FEH
+      .WORD     086H
+      .WORD     0FAH
+      .WORD     0FCH      ;- 7=2FH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0C9H
+      .WORD     0B6H
+      .WORD     0B6H
+      .WORD     0B6H
+      .WORD     0C9H      ;- 8=30H
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0FFH
+      .WORD     0F9H
+      .WORD     0B6H
+      .WORD     0B6H
+      .WORD     0D6H
+      .WORD     0E1H      ;- 9=31H
+      .WORD     0FFH
+      .WORD     0FFH

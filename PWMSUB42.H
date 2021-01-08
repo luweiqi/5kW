@@ -1,0 +1,441 @@
+		.TEXT
+LOADCOUNT:   	SST 	#0,STK1 			;save ST0 - Forced Page 0
+		SST 	#1,STK2 			;save ST1 - Forced Page 0
+		LDP	#0
+		SACL 	STK3 				;save ACCL
+		SACH 	STK4 				;save ACCH
+		LDP     #232
+                LACL    EVIVRA
+                SUB     #0027H
+                BCND    CHANGE1,EQ
+		B	LOOP1              
+;----------------------------------------------------
+;NET CURRENT AND VOLTAGET A/D 		
+;----------------------------------------------------	
+CHANGE1:   	SETC	SXM
+		LDP	#4
+
+		LACC	KEYTEMP3
+		SUB	SETCURRENT1
+		BCND	CHANGE11,EQ
+	
+		LACC	SLOW3
+		SUB	#50
+		BCND	CHANGE11,LT
+	
+		SPLK	#0,SLOW3
+
+		LACC	KEYTEMP3
+		SUB	SETCURRENT1
+		BCND	CHANGE12,GT
+		LACC	SETCURRENT1
+		SUB	#1
+		SACL	SETCURRENT1
+		B	CHANGE11
+		
+CHANGE12:	LACC	SETCURRENT1
+		ADD	#1
+		SACL	SETCURRENT1
+
+
+
+CHANGE11:	CLRC	SXM
+
+		
+		LDP	#4
+		LACC	SETCURRENT1
+		SUB	#2
+		BCND	CHANGE14,GT
+		SPLK	#5,SPWM1
+		B	CHANGE13
+CHANGE14:	ADD	#2
+		SUB	#5
+		BCND	CHANGE15,GT
+		SPLK	#5,SPWM1
+		B	CHANGE13
+CHANGE15:	ADD	#5
+		SUB	#10
+		BCND	CHANGE16,GT
+		SPLK	#5,SPWM1
+		B	CHANGE13
+CHANGE16:	ADD	#10
+		SUB	#15
+		BCND	CHANGE17,GT
+		SPLK	#6,SPWM1
+		B	CHANGE13
+CHANGE17:	ADD	#15
+		SUB	#20
+		BCND	CHANGE18,GT
+		SPLK	#7,SPWM1
+		B	CHANGE13
+CHANGE18:	ADD	#20
+		SUB	#25
+		BCND	CHANGE19,GT
+		SPLK	#12,SPWM1
+		B	CHANGE13
+CHANGE19:	SPLK	#16,SPWM1
+
+CHANGE13:	NOP
+		LDP	#224
+		SPLK    #1111100001111100B,ADCTRL1
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP1:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP1,TC 
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ADDATA1
+		LDP	#224
+		
+		LACC	ADCFIFO1
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	PWMAD1
+		
+ 		LDP	#224
+		SPLK    #1111100001111100B,ADCTRL1
+	        SPLK    #0000000000000110B,ADCTRL2
+ADCLOOP2:	LACC	ADCTRL1
+		BIT	ADCTRL1,BIT7
+		BCND    ADCLOOP2,TC 
+
+		LACC	ADCFIFO2
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	ADDATA2
+		
+		LDP	#224
+		LACC	ADCFIFO1
+		RPT	#5
+		SFR
+		LDP	#4
+		SACL	PWMAD2
+
+;----------------------------------------------------
+;CURRENT A/D  JUDGELIMIT		
+;----------------------------------------------------	
+		SETC	SXM
+
+		LDP	#4
+		LACC	WDATA5
+		ADD	AD2MID		
+		SACL	ADDATA3
+		LACC	ADDATA1
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA4
+		LACC	ADDATA2
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA5
+
+		LACC	ADDATA4
+		SUB	ADDATA5
+		BCND	DO70,GT
+		LACC	ADDATA1
+		SACL	ADDATA		
+		B	DO71
+
+DO70:		LACC	ADDATA2
+		SACL	ADDATA
+
+DO71:		LACC	ADDATA
+		SUB	AD2MID
+		SACL	WDATA4
+
+;----------------------------------------------------
+;VOLTAGE A/D  JUDGELIMIT		
+;----------------------------------------------------	
+		SETC	SXM
+		LDP	#4
+		LACC	TDATA5
+		ADD	AD1MID		
+		SACL	ADDATA3
+		LACC	PWMAD1
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA4
+		LACC	PWMAD2
+		SUB	ADDATA3
+		ABS
+		SACL	ADDATA5
+
+		LACC	ADDATA4
+		SUB	ADDATA5
+		BCND	DO80,GT
+		LACC	PWMAD1
+		SACL	PWMAD		
+		B	DO81
+
+DO80:		LACC	PWMAD2
+		SACL	PWMAD
+
+DO81:		LACC	PWMAD
+		SUB	AD1MID
+		SACL	TDATA4
+
+		
+;----------------------------------------------------
+;CURRENT A/D  LIMIT		
+;----------------------------------------------------	
+		LDP	#4
+		LACC	ADDATA1
+		SUB	AD2MID
+		ABS
+		SUB	#400
+		BCND	JUDGE50,LT
+		LDP	#232
+	        SPLK    #0000100001010111B,COMCON
+BAD1:		B	BAD1	
+JUDGE50:	LDP	#4
+		LACC	ADDATA2
+		SUB	AD2MID
+		ABS
+		SUB	#400
+		BCND	JUDGE51,LT
+		LDP	#232
+	        SPLK    #0000100001010111B,COMCON
+BAD2:		B	BAD2	
+
+
+
+
+;----------------------------------------------------
+;CURRENT A/D AND VOLTAGE A/D PREWANT	
+;----------------------------------------------------	
+		SETC	SXM
+JUDGE51:	CALL	ADWANT05
+		CALL	PWMWANT05
+
+		SETC	SXM
+		
+;----------------------------------------------------
+;READ LIST TO GET DATA	
+;----------------------------------------------------	
+		LDP	#4
+		LACC	PWMCOUNT3
+		ADD	PWMADDRESS1
+		TBLR	ADCALU1
+		LACC	ADCALU1
+		SUB	PWMADD
+		SACL	MPY1
+		LACC	U2K1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SFR
+		SACL	MPY1
+		LACC	SETCURRENT1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		LACC	U2AD1
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SFL
+		SACL	NEWCAMP	
+		
+;		LACC 	U2AD1
+;		SUB	#150
+;		BCND	JUDGE90,GT
+;		SPLK	#0,NEWCAMP
+
+		
+JUDGE90:	LDP	#4
+		LACC    PWMCOUNT1
+                ADD     PWMADDRESS
+		TBLR	NEWCAMP1
+		
+		LDP	#4
+		LACC	PWMCOUNT2
+		ADD	PWMADDRESS
+		TBLR	NEWCAMP7
+		LACC	NEWCAMP7
+		SUB	PWMADD
+		SACL	MPY1
+		LACC	SETCURRENT1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	NEWCAMP21
+		
+		LACC	WDATA5
+		SACL	MPY1
+		LACC	ADK1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		NEG
+		SUB	NEWCAMP21
+		SACL	NEWCAMPT1
+		
+		SACL	DIVID1
+		LACC	SPWM1
+		SACL	DIVID2
+		
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+
+		SACL	NEWCAMP2
+
+
+
+		
+;----------------------------------------------------
+;CALU THE PWM VALUE TO EQUAL THE NET VOLTAGE	
+;----------------------------------------------------	
+		LACC	TDATA5
+		SACL	MPY1
+		LACC	PWMM1
+		SACL	MPY2
+		CALL	MPYSUB
+		LACC	MPYRESULT
+		SACL	DIVID1
+		SPLK	#20,DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	SPWM2
+
+;		SPLK	#0,NEWCAMP
+;		SPLK	#0,SPWM2
+;			
+;		SPLK	#0,NEWCAMP2
+;		SPLK	#0,FDATA1
+
+		
+		LACC	NEWCAMP2
+		ADD	FDATA1
+		SACL	NEWCAMP3
+
+;		LACC	NEWCAMP3
+;		ADD	#200
+;		BCND	LJUDGE10,GT
+;		SPLK	#0,NEWCAMP3
+;		LACC	NEWCAMP3
+;		SUB	#200
+;		SACL	NEWCAMP3
+;		B	LJUDGE11
+;LJUDGE10:	LACC	NEWCAMP3
+;		SUB	#200
+;		BCND	LJUDGE11,LT
+;		SPLK	#200,NEWCAMP3
+
+
+
+LJUDGE11:	LACC	NEWCAMP
+
+		ADD	NEWCAMP3
+		SUB	SPWM2
+		
+	
+		SACL	NEWCAMPT2
+		LACC	NEWCAMPT2
+	
+		SACL	LIMIT1
+		CALL	LIMIT
+		LACC	LIMIT1
+		SACL	NEWCAMPT2
+;----------------------------------------------------
+;OUT THE PULSE
+;----------------------------------------------------	
+		LACC	NEWCAMPT2		;×îºóÊä³öÂö¿í
+		ADD	PWMADD
+		
+		LDP     #232
+		SACL	CMPR1
+		LDP	#4
+		LACC	PWMADD
+		SUB	NEWCAMPT2
+		
+		LDP     #232
+		SACL	CMPR2
+;----------------------------------------------------
+;OTHER CALCU
+;----------------------------------------------------	
+		
+		LDP	#4
+		LACC	WDATA2
+		SACL	WDATA1
+		LACC	WDATA3
+		SACL	WDATA2
+		LACC	WDATA4
+		SACL	WDATA3
+
+
+		LACC	TDATA2
+		SACL	TDATA1
+		LACC	TDATA3
+		SACL	TDATA2
+		LACC	TDATA4
+		SACL	TDATA3
+
+	
+		LDP	#4
+		LACC	NEWCAMPT1
+		SACL	DIVID1
+		LACC	PWMK2
+		SACL	DIVID2
+		CALL	DIVIDSUB
+		LACC	DIVRESULT1
+		SACL	FDATA3
+		LACC	FDATA3
+		ADD	FDATA1
+		SACL	FDATA1
+	
+		LACC	FDATA1
+		ADD	#100
+		BCND	LJUDGE5,GT
+		SPLK	#0,FDATA1
+		LACC	FDATA1
+		SUB	#100
+		SACL	FDATA1
+		B	LJUDGE6
+LJUDGE5:	LACC	FDATA1
+		SUB	#100
+		BCND	LJUDGE6,LT
+		SPLK	#100,FDATA1
+
+
+LJUDGE6:	LDP     #4
+        	LACC    PWMCOUNT1
+                ADD     #1
+                SACL    PWMCOUNT1
+		SUB     #150
+	        BCND    LOOP4,LT
+		SPLK    #0,PWMCOUNT1
+LOOP4:		LDP     #4
+        	LACC    PWMCOUNT2
+                ADD     #1
+                SACL    PWMCOUNT2
+		SUB     #150
+	        BCND    LOOP6,LT
+		SPLK    #0,PWMCOUNT2
+LOOP6:	      
+		LDP     #4
+        	LACC    PWMCOUNT3
+	        ADD     #1
+                SACL    PWMCOUNT3
+		SUB     #150
+ 	        BCND    LOOP1,LT
+		SPLK    #0,PWMCOUNT3
+LOOP1:	       	CLRC	SXM
+		LDP 	#232 		
+		LACC 	EVIFRA 				;Load EVIFRA - Type A Interrupt  Flags
+		SACL    EVIFRA 				;Clear the Interrupt Flags
+		LDP	#0
+  		ZALH 	STK4 				; restore ACCH
+		ADDS 	STK3 				; restore ACCL
+		LST 	#1,STK2 			; restore ST1
+		LST 	#0,STK1 			; restore ST0
+		CLRC 	INTM 				;Enable Interrupts
+		RET
+
+DD:		RET
+
+
